@@ -24,6 +24,13 @@ jobs:
       contents: read
 
     steps:
+      # - uses: act10ns/slack@v1
+      #     env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: starting
+      #     channel: '#panicroom'
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -68,9 +75,19 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
+        id: deploy-to-ecs
         uses: aws-actions/amazon-ecs-deploy-task-definition@de0132cf8cdedb79975c6d42b77eb7ea193cf28e
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+      
+      # - uses: rnvillacrusis/slack-notifs@1
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: ${{ job.status }}
+      #     steps: ${{ toJson(steps) }}
+      #     channel: '#panicroom'
+      #   if: always()
