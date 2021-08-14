@@ -24,6 +24,13 @@ jobs:
       registry: ${{ steps.login-ecr.outputs.registry }}
 
     steps:
+      # - uses: act10ns/slack@v1
+      #     env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: starting
+      #     channel: '#panicroom'
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -107,6 +114,15 @@ jobs:
           cluster: ${{ secrets.ECS_CLUSTER }}
           wait-for-service-stability: true
 
+      # - uses: rnvillacrusis/slack-notifs@1
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: ${{ job.status }}
+      #     steps: ${{ toJson(steps) }}
+      #     channel: '#panicroom'
+      #   if: always()
+
   deploy-prod:
     needs: deploy-staging
     name: Deploy to production
@@ -145,3 +161,12 @@ jobs:
           service: ${{ secrets.ECS_SERVICE }}
           cluster: ${{ secrets.ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      # - uses: rnvillacrusis/slack-notifs@1
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: ${{ job.status }}
+      #     steps: ${{ toJson(steps) }}
+      #     channel: '#panicroom'
+      #   if: always()
