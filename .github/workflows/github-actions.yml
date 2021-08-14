@@ -24,6 +24,13 @@ jobs:
       registry: ${{ steps.login-ecr.outputs.registry }}
 
     steps:
+      # - uses: act10ns/slack@v1
+      #     env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: starting
+      #     channel: '#panicroom'
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -100,12 +107,21 @@ jobs:
           image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 
       - name: Deploy Amazon ECS task definition
+        id: deploy-to-ecs
         uses: aws-actions/amazon-ecs-deploy-task-definition@de0132cf8cdedb79975c6d42b77eb7ea193cf28e
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ secrets.ECS_SERVICE }}
           cluster: ${{ secrets.ECS_CLUSTER }}
           wait-for-service-stability: true
+      # - uses: rnvillacrusis/slack-notifs@1
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: ${{ job.status }}
+      #     steps: ${{ toJson(steps) }}
+      #     channel: '#panicroom'
+      #   if: always()
 
   deploy-prod:
     needs: deploy-staging
@@ -145,3 +161,12 @@ jobs:
           service: ${{ secrets.ECS_SERVICE }}
           cluster: ${{ secrets.ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      # - uses: rnvillacrusis/slack-notifs@1
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   with:
+      #     status: ${{ job.status }}
+      #     steps: ${{ toJson(steps) }}
+      #     channel: '#panicroom'
+      #   if: always()
