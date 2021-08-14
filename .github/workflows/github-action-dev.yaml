@@ -1,8 +1,9 @@
-name: Deploy to AdvanceTech PH
+name: Deploy to Adhoc
 on:
   push:
     branches:
-      - master
+      - 'feature/**'
+
 env:
   AWS_REGION: ap-southeast-1
   CONTAINER_NAME: advancetechph
@@ -24,13 +25,6 @@ jobs:
       registry: ${{ steps.login-ecr.outputs.registry }}
 
     steps:
-      # - uses: act10ns/slack@v1
-      #     env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #   with:
-      #     status: starting
-      #     channel: '#panicroom'
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -38,11 +32,11 @@ jobs:
         id: branch
         run: |
           echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
-          echo sample1
+          echo sample11
           echo ${GITHUB_REF#refs/*/}
 
-      - name: Sample
-        run: echo ${{ github.head_ref }}
+      - name: Check branch
+        run: echo ${{ steps.vars.outputs.short_ref }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -73,61 +67,11 @@ jobs:
           # echo "::set-output name=image::${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG"
           echo $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
 
-
-  deploy-staging:
+  deploy-adhoc:
     needs: build
-    # if: ${{ github.ref == 'refs/heads/master' }}
-    name: Deploy to staging
+    name: Deploy to adhoc
     environment:
-        name: staging
-        # url: ${{ steps.deploy_staging.outputs.webapp-url }}
-
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Download task definition
-        run: |
-          aws ecs describe-task-definition --task-definition ${{ secrets.TASK_FAMILY }} --query taskDefinition > task-definition.json
-
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@97587c9d45a4930bf0e3da8dd2feb2a463cf4a3a
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
-
-      - name: Deploy Amazon ECS task definition
-        id: deploy-to-ecs
-        uses: aws-actions/amazon-ecs-deploy-task-definition@de0132cf8cdedb79975c6d42b77eb7ea193cf28e
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ secrets.ECS_SERVICE }}
-          cluster: ${{ secrets.ECS_CLUSTER }}
-          wait-for-service-stability: true
-      # - uses: rnvillacrusis/slack-notifs@1
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #   with:
-      #     status: ${{ job.status }}
-      #     steps: ${{ toJson(steps) }}
-      #     channel: '#panicroom'
-      #   if: always()
-
-  deploy-prod:
-    needs: deploy-staging
-    name: Deploy to production
-    environment:
-        name: production
+        name: dev
         # url: ${{ steps.deploy_staging.outputs.webapp-url }}
 
     runs-on: ubuntu-latest
@@ -161,12 +105,3 @@ jobs:
           service: ${{ secrets.ECS_SERVICE }}
           cluster: ${{ secrets.ECS_CLUSTER }}
           wait-for-service-stability: true
-
-      # - uses: rnvillacrusis/slack-notifs@1
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #   with:
-      #     status: ${{ job.status }}
-      #     steps: ${{ toJson(steps) }}
-      #     channel: '#panicroom'
-      #   if: always()
