@@ -66,10 +66,10 @@ jobs:
           # be deployed to ECS.
           docker build -t $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG .
           docker pull $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:latest
-          # docker tag $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:latest
+          docker tag $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:latest
           docker tag $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:latest $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
           docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
-          # docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:latest
+          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:latest
           echo "::set-output name=image::${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG"
           echo $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
 
